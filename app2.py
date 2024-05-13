@@ -3,6 +3,9 @@ import pandas as pd
 import xgboost as xgb
 from datetime import datetime
 import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
+
 import seaborn as sns
 
 # Initialize and load the XGBoost model
@@ -41,30 +44,14 @@ if uploaded_file is not None:
             fig, ax = plt.subplots()
             sns.histplot(data[select_column], kde=True, ax=ax)
             st.pyplot(fig)
-        
-        # Correlation heatmap
-        if numeric_columns:
-            if st.button('Show Correlation Heatmap'):
-                st.subheader("Correlation Heatmap")
-                plt.figure(figsize=(10, 7))
-                sns.heatmap(data[numeric_columns].corr(), annot=True, fmt=".2f")
-                st.pyplot()
+            
+          
+                  # Time Series plot (assuming a date column exists)
+        if 'Date' in data.columns:
+            st.subheader("Time Series Analysis")
+            data['Date'] = pd.to_datetime(data['Date'])  # Ensure 'Date' column is in datetime format
 
-        # Pair plot (scatter plots and histograms)
-        if st.button("Show Pair Plot"):
-            st.subheader("Pair Plot")
-            pair_plot_data = data[numeric_columns]
-            sns.pairplot(pair_plot_data)
-            st.pyplot()
-
-        # Box plots for each numeric feature
-        if st.button("Show Box Plots"):
-            st.subheader("Box Plots for Numeric Features")
-            for column in numeric_columns:
-                fig, ax = plt.subplots()
-                sns.boxplot(x=data[column])
-                st.pyplot(fig)
-
+                
         # Categorical data analysis (if categorical columns exist)
         categorical_columns = data.select_dtypes(['object']).columns.tolist()
         if categorical_columns:
@@ -76,18 +63,6 @@ if uploaded_file is not None:
                 plt.xticks(rotation=45)
                 st.pyplot(fig)
         
-        # Time Series plot (assuming a date column exists)
-        if 'Date' in data.columns:
-            st.subheader("Time Series Analysis")
-            data['Date'] = pd.to_datetime(data['Date'])
-            time_series_column = st.selectbox('Select Time Series Column', numeric_columns)
-            if st.button('Show Time Series Plot'):
-                fig, ax = plt.subplots()
-                data.set_index('Date')[time_series_column].plot(ax=ax)
-                ax.set_title(f'Time Series Plot of {time_series_column}')
-                ax.set_ylabel(time_series_column)
-                ax.grid(True)
-                st.pyplot(fig)
 
 # Prediction Interface
 st.subheader('Predict Total Monthly Amount with XGBoost')
@@ -123,6 +98,3 @@ if st.button('Predict Total Amount'):
     prediction = model.predict(df)[0]
     prediction_in_kshs = prediction * 135  # Modify the exchange rate as necessary
     st.write(f"The predicted total monthly amount for {date_input.strftime('%Y-%m-%d')} is Kshs {prediction_in_kshs:.2f}")
-
-# Instructions to run the app
-# Save this script as app.py and execute `streamlit run app.py` in your terminal.
